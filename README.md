@@ -1,7 +1,9 @@
 # Setup (linux guide)
-1. Set environment `BOT_TOKEN`
+1. Set environments `BOT_TOKEN`, `INIT_HOURS`,`INIT_MINUTES`
     ```bash
     export BOT_TOKEN=6318692078:aae1rdwzuglssqhouk1ouuiebqylrxahmu
+    export INIT_HOURS=16
+    export INIT_MINUTES=20
     ```
 2. Create `members.txt` in the same directory with `main.py` and fill it
     ```
