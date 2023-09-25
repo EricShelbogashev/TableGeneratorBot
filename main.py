@@ -12,8 +12,6 @@ members_file = "members.txt"  # Replace with the actual file path
 with open(members_file, "r", encoding="utf-8") as file:
     members = [line.strip() for line in file]
 
-# Print the list
-
 # Initialize the current time
 current_time = datetime.datetime.now()
 
