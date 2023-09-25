@@ -15,29 +15,37 @@ with open(members_file, "r", encoding="utf-8") as file:
 # Print the list
 
 # Initialize the current time
-current_time = datetime.datetime(2023, 8, 25, 16, 5)
+current_time = datetime.datetime.now()
 
 
 def get_time_with_offset(offset_minutes):
     """Generate a time with a specified minutes offset."""
-    global current_time
-    current_time += datetime.timedelta(minutes=offset_minutes)
-    time = current_time.time()
+    time = current_time
+    time += datetime.timedelta(minutes=offset_minutes)
     return f"{time.hour}:{time.minute:02}"
 
 
-async def generate_table(update: Update, context: CallbackContext):
+async def generate_table(update: Update):
     """Generate a table of subjects with a specified time offset."""
     global members
 
     # Get the offset from the message
     message_text = update.message.text.replace("/generate", "").strip()
-    offset_minutes = int(message_text) if message_text.isdigit() else 0
 
     # Filter subjects based on the message
     message_parts = message_text.split()
+
+    offset_minutes = [
+        offset for offset in message_parts if "offset=" in offset
+    ]
+
+    if not offset_minutes:
+        offset_minutes = 15
+    else:
+        offset_minutes = int(offset_minutes[-1].replace("offset=", ""))
+
     filtered_subjects = [
-        subject for subject in members if not any(name in subject for name in message_parts)
+        member for member in members if not any(name in member for name in message_parts)
     ]
 
     # Shuffle the filtered subjects
@@ -53,16 +61,27 @@ async def generate_table(update: Update, context: CallbackContext):
     await update.message.reply_text(f"Список сдачи:\n{table}")
 
 
-async def generate_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def generate_command(update: Update, context: CallbackContext):
     """Handle the /generate command."""
     global current_time
-    current_time = datetime.datetime(2023, 8, 25, 16, 5)
-    await generate_table(update, context)
+    await generate_table(update)
+
+
+def init_current_time():
+    global current_time
+    current_time = datetime.datetime(
+        year=current_time.year,
+        month=current_time.month,
+        day=current_time.day,
+        hour=int(os.environ['INIT_HOURS']),
+        minute=int(os.environ['INIT_MINUTES'])
+    )
 
 
 def main():
     """Start the bot."""
     # Create the Application and pass it your bot's token.
+    init_current_time()
     application = Application.builder().token(os.environ['BOT_TOKEN']).build()
 
     application.add_handler(CommandHandler("generate", generate_command))
